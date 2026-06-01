@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Intrusion Detection System</title>
+
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      }
+
+      .glass-box {
+        width: 450px;
+        padding: 30px;
+        border-radius: 20px;
+        backdrop-filter: blur(15px);
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+        color: white;
+        text-align: center;
+      }
+
+      input {
+        width: 90%;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 8px;
+        border: none;
+        outline: none;
+      }
+
+      button {
+        width: 95%;
+        padding: 12px;
+        margin-top: 20px;
+        border: none;
+        background: #00c6ff;
+        color: black;
+        font-size: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      button:hover {
+        background: #03a9f4;
+      }
+
+      h3 {
+        margin-top: 20px;
+        font-size: 22px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="glass-box">
+      <h2>IDS - Intrusion Detection</h2>
+
+      <input id="duration" placeholder="duration" />
+      <input id="src_bytes" placeholder="src_bytes" />
+      <input id="dst_bytes" placeholder="dst_bytes" />
+      <input id="count" placeholder="count" />
+      <input id="srv_count" placeholder="srv_count" />
+      <input id="same_srv_rate" placeholder="same_srv_rate" />
+      <input id="diff_srv_rate" placeholder="diff_srv_rate" />
+
+      <button onclick="predict()">Predict</button>
+
+      <h3 id="result"></h3>
+    </div>
+    <script>
+      async function predict() {
+        let inputs = [
+          document.getElementById("duration"),
+          document.getElementById("src_bytes"),
+          document.getElementById("dst_bytes"),
+          document.getElementById("count"),
+          document.getElementById("srv_count"),
+          document.getElementById("same_srv_rate"),
+          document.getElementById("diff_srv_rate"),
+        ];
+
+        // Check for empty fields
+        for (let i = 0; i < inputs.length; i++) {
+          if (inputs[i].value.trim() === "") {
+            document.getElementById("result").innerHTML =
+              "❗ Please enter all values";
+            document.getElementById("result").style.color = "yellow";
+            return;
+          }
+        }
+
+        // Convert to numeric values
+        const vals = inputs.map((i) => parseFloat(i.value));
+
+        const response = await fetch("http://127.0.0.1:5000/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ features: vals }),
+        });
+
+        const data = await response.json();
+
+        if (data.prediction === 1) {
+          document.getElementById("result").innerHTML = "🚨 Attack Detected!";
+          document.getElementById("result").style.color = "#ff4f4f";
+        } else {
+          document.getElementById("result").innerHTML = "✅ Normal Traffic";
+          document.getElementById("result").style.color = "#4fff74";
+        }
+      }
+    </script>
+  </body>
+</html>
